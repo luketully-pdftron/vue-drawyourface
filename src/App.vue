@@ -1,26 +1,7 @@
 <template>
   <div id="app">
     <h1>Draw your face</h1>
-    <ul>
-      <li>
-        <router-link to="/">/</router-link>
-      </li>
-      <li>
-        <router-link to="/user/0">/user/0</router-link>
-      </li>
-      <li>
-        <router-link to="/user/1">/user/1</router-link>
-      </li>
-      <li>
-        <router-link to="/user/2">/user/2</router-link>
-      </li>
-      <li>
-        <router-link to="/user/3">/user/3</router-link>
-      </li>
-      <li>
-        <router-link to="/user/4">/user/4</router-link>
-      </li>
-    </ul>
+    
     <router-view
       class="view"
       @change="handleChanged"
@@ -108,7 +89,6 @@ export default {
       }
     },
     handleChanged({data, userId}) {
-      debugger;
       /* Saved the changed data based on the userId at the time of editing */
       const keyAsString = userId.toString();
       this.faceData[userId].content = data;
