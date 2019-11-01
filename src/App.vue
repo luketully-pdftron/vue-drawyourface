@@ -1,5 +1,40 @@
 <template>
-  <div>
+  <div id="app">
+    <h1>Draw your face</h1>
+    <ul>
+      <li>
+        <router-link to="/">/</router-link>
+      </li>
+      <li>
+        <router-link to="/user/0">/user/0</router-link>
+      </li>
+      <li>
+        <router-link to="/user/1">/user/1</router-link>
+      </li>
+      <li>
+        <router-link to="/user/2">/user/2</router-link>
+      </li>
+      <li>
+        <router-link to="/user/3">/user/3</router-link>
+      </li>
+      <li>
+        <router-link to="/user/4">/user/4</router-link>
+      </li>
+    </ul>
+    <router-view
+      class="view"
+      @change="handleChanged"
+      @loaded="handleLoaded"
+      @update:selected="changeCurrentUser"
+      :publicPath="publicPath"
+      :content="content"
+      :users="faceData"
+      :selected="currentUser"
+      :userId="currentUser"
+    ></router-view>
+  </div>
+
+  <!-- <div>
     <UserList :users="faceData" :selected="currentUser" @update:selected="changeCurrentUser"></UserList>
     <WebViewer
       v-on:loaded="handleLoaded"
@@ -7,17 +42,34 @@
       v-bind:publicPath="publicPath"
       :content="content"
     ></WebViewer>
-  </div>
+  </div>-->
 </template>
 
 
 <script>
 import WebViewer from "./components/WebViewer.vue";
 import UserList from "./components/UserList.vue";
+import VueRouter from "vue-router";
 import { saveFace, getFace } from "./faceStore.js";
+
+const router = new VueRouter({
+  mode: "history",
+  base: __dirname,
+  routes: [
+    {
+      path: "/",
+      component: UserList
+    },
+    {
+      path: "/user/:id",
+      component: WebViewer
+    }
+  ]
+});
 
 export default {
   name: "app",
+  router,
   components: {
     WebViewer,
     UserList
@@ -55,28 +107,40 @@ export default {
       }
     };
   },
-  methods: {
-    handleLoaded(e) {
-      getFace(this.currentUser.toString()).then(value => {
-        this.faceData[this.currentUser].content = value.drawingData || null;
-      });
+  watch: {
+    $route(to, from) {
+      if (to.params.id !== undefined)
+        this.currentUser = parseInt(to.params.id, 10);
     },
-    handleChanged(e) {
-      const newContent = e;
-      const keyAsAstring = this.currentUser.toString();
-      this.faceData[this.currentUser].content = e;
-      saveFace(keyAsAstring, this.faceData[keyAsAstring].content);
-    },
-    changeCurrentUser(e) {
-      this.currentUser = e;
+    currentUser() {
       getFace(this.currentUser.toString()).then(value => {
-        this.faceData[this.currentUser].content = value.drawingData || null;
+        if (value) {
+          this.faceData[this.currentUser].content = value.drawingData || null;
+        }
       });
     }
   },
-  mounted: function() {
-    // Init currentUser
-    this.currentUser = 2;
+  methods: {
+    handleLoaded(e) {
+      if (!this.currentUser) {
+        this.currentUser = 2;
+      }
+    },
+    handleChanged({data, userId}) {
+      debugger;
+      /* Saved the changed data based on the userId at the time of editing */
+      const keyAsString = userId.toString();
+      this.faceData[userId].content = data;
+      saveFace(keyAsString, this.faceData[userId].content);
+    },
+    changeCurrentUser(e) {
+      this.currentUser = e;
+      this.$router.push({ path: `/user/${e}` });
+    }
+  },
+  mounted() {
+    const route = this.$router.currentRoute;
+    if (route.params.id) this.currentUser = parseInt(route.params.id, 10);
   }
 };
 </script>
