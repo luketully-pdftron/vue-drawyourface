@@ -1,6 +1,5 @@
 <template>
   <div>
-    <h2>{{loading ? 'Loading' : 'false'}}</h2>
     <div class="webviewer-container" id="webviewer-main" ref="webviewer"></div>
   </div>
 </template>
@@ -18,7 +17,6 @@ export default {
   },
   methods: {
     saveData(data, userId) {
-      console.log(data);
       const annotData = data;
       this.$emit("change", { data, userId: userId });
     },
@@ -36,7 +34,6 @@ export default {
           this.annotManager.deleteAnnotations(annotList);
         }
       }
-      console.log("Annotations imported");
       this.annotManager.importAnnotations(annotations);
     },
     init(container) {
@@ -56,7 +53,6 @@ export default {
           Content may have been received before the WebViewer was attached to the DOM.
           Now that we know it has been, we can pull those annotations off the queue
         */
-        console.log("This is " + _self);
 
         // you can also access major namespaces from the instance as follows:
         // var Tools = instance.Tools;
@@ -71,7 +67,6 @@ export default {
         // Listen for annotations being changed and send them out as events
         (function(userId) {
           _self.annotManager.on("annotationChanged", () => {
-            debugger;
             _self.saveData(_self.annotManager.exportAnnotations(), userId);
           });
         })(_self.userId);
