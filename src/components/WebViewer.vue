@@ -50,20 +50,11 @@ export default {
         _self.docViewer = instance.docViewer;
         _self.annotManager = instance.annotManager;
 
-        /*
-          Content may have been received before the WebViewer was attached to the DOM.
-          Now that we know it has been, we can pull those annotations off the queue
-        */
-
-        // you can also access major namespaces from the instance as follows:
-        // var Tools = instance.Tools;
-        // var Annotations = instance.Annotations;
         instance.disableTools();
         instance.enableTools([
           "AnnotationCreateFreeHand",
           "AnnotationEraserTool"
         ]);
-        // now you can access APIs through `this.instance`
 
         // Listen for annotations being changed and send them out as events
         (function(userId) {
@@ -72,9 +63,7 @@ export default {
           });
         })(_self.userId);
 
-        // or listen to events from the viewer element
         _self.docViewer.on("documentLoaded", () => {
-          // call methods relating to the loaded document
           _self.$emit("loaded");
           if (_self.content) {
             _self.updateAnnotations(_self.content);
@@ -99,6 +88,7 @@ export default {
     }
   },
   mounted: function() {
+    /* Pass this component reference element along to the webviewer intializer */
     const webViewerContainer = this.$refs.webviewer;
     this.loading = true;
     this.init(webViewerContainer);
