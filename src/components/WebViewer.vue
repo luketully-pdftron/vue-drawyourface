@@ -17,10 +17,10 @@ export default {
     };
   },
   methods: {
-    saveData(data) {
+    saveData(data, userId) {
       console.log(data);
       const annotData = data;
-      this.$emit("change", {data, userId: this.userId});
+      this.$emit("change", { data, userId: userId });
     },
     updateAnnotations(annotations) {
       /* Param: New Annotations XML String
@@ -62,23 +62,19 @@ export default {
         // var Tools = instance.Tools;
         // var Annotations = instance.Annotations;
         instance.disableTools();
-        instance.enableTools(["AnnotationCreateFreeHand","AnnotationEraserTool"]);
+        instance.enableTools([
+          "AnnotationCreateFreeHand",
+          "AnnotationEraserTool"
+        ]);
         // now you can access APIs through `this.instance`
 
         // Listen for annotations being changed and send them out as events
-        // _self.annotManager.on("annotationChanged", () => {
-        //   debugger;
-        //   _self.saveData(_self.annotManager.exportAnnotations());
-        // });
-        _self.annotManager.on("annotationAdded", () => {
-          debugger;
-          _self.saveData(_self.annotManager.exportAnnotations());
-        });
-        _self.annotManager.on("annotationCreated", () => {
-          debugger;
-          _self.saveData(_self.annotManager.exportAnnotations());
-        });
-
+        (function(userId) {
+          _self.annotManager.on("annotationChanged", () => {
+            debugger;
+            _self.saveData(_self.annotManager.exportAnnotations(), userId);
+          });
+        })(_self.userId);
 
         // or listen to events from the viewer element
         _self.docViewer.on("documentLoaded", () => {
@@ -94,9 +90,16 @@ export default {
   watch: {
     content(annotations) {
       if (this.annotManager) {
-        console.log("annotation manager exists -> update annotations");
         this.updateAnnotations(annotations);
       }
+    },
+    userId() {
+      // Listen for annotations being changed and send them out as events
+      (function(userId) {
+        _self.annotManager.on("annotationChanged", () => {
+          _self.saveData(_self.annotManager.exportAnnotations(), userId);
+        });
+      })(_self.userId);
     }
   },
   mounted: function() {
