@@ -51,6 +51,8 @@ import WebViewer from "./components/WebViewer.vue";
 import UserList from "./components/UserList.vue";
 import VueRouter from "vue-router";
 import { saveFace, getFace } from "./faceStore.js";
+import iniialData from "./data/users.js";
+
 
 const router = new VueRouter({
   mode: "history",
@@ -83,28 +85,7 @@ export default {
     return {
       publicPath: process.env.BASE_URL,
       currentUser: 2,
-      faceData: {
-        0: {
-          name: "Rosi",
-          content: null
-        },
-        1: {
-          name: "Tim",
-          content: null
-        },
-        2: {
-          name: "Sarah",
-          content: null
-        },
-        3: {
-          name: "Bob",
-          content: null
-        },
-        4: {
-          name: "Greg",
-          content: null
-        }
-      }
+      faceData: intialData
     };
   },
   watch: {
