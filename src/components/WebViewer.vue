@@ -1,30 +1,29 @@
 <template>
   <div>
-    {{timestamp}}
+    {{ timestamp }}
     <div class="webviewer-container" id="webviewer-main" ref="webviewer"></div>
   </div>
 </template>
 
-
 <script>
 export default {
-  name: "WebViewer",
-  props: ["publicPath", "content", "userId", "timestamp"],
+  name: 'WebViewer',
+  props: ['publicPath', 'content', 'userId', 'timestamp'],
   data() {
     return {
-      docState: "",
+      docState: '',
       loading: false
     };
   },
   methods: {
     saveData(data, userId) {
       const annotData = data;
-      this.$emit("change", { data, userId: userId });
+      this.$emit('change', { data, userId: userId });
     },
     updateAnnotations(annotations) {
-      /* Param: New Annotations XML String
-        Clear the canvas
-        Write new data
+      /*
+        Handle updating annotations on the current document.
+        Here we delete the current set of annotations, and write the new incoming annotations that may have been cached in local storage.
       */
       const annotList = this.annotManager.getAnnotationsList();
       const hasAnnots = annotList.length > 0;
@@ -40,31 +39,36 @@ export default {
     init(container) {
       WebViewer(
         {
-          path: "/lib",
-          initialDoc: "/assets/xmas-part-sample.pdf"
+          path: '/lib',
+          initialDoc: '/assets/xmas-part-sample.pdf'
         },
         container
       ).then(instance => {
         const _self = this;
         _self.loading = false;
+
+
+        /* Attach WebViewer globals to the Vue instance. These won't be reactive. */
         _self.docViewer = instance.docViewer;
         _self.annotManager = instance.annotManager;
 
+        /* Handle any WebViewer manual configuration */
         instance.disableTools();
         instance.enableTools([
-          "AnnotationCreateFreeHand",
-          "AnnotationEraserTool"
+          'AnnotationCreateFreeHand',
+          'AnnotationEraserTool'
         ]);
 
-        // Listen for annotations being changed and send them out as events
+        /* Listen for annotations being changed and send them out as events
+        This is being done with a self-executing anon function so that the userId at the time the event was created could be captured. */
         (function(userId) {
-          _self.annotManager.on("annotationChanged", () => {
+          _self.annotManager.on('annotationChanged', () => {
             _self.saveData(_self.annotManager.exportAnnotations(), userId);
           });
         })(_self.userId);
 
-        _self.docViewer.on("documentLoaded", () => {
-          _self.$emit("loaded");
+        _self.docViewer.on('documentLoaded', () => {
+          _self.$emit('loaded');
           if (_self.content) {
             _self.updateAnnotations(_self.content);
           }
@@ -81,7 +85,7 @@ export default {
     userId() {
       // Listen for annotations being changed and send them out as events
       (function(userId) {
-        _self.annotManager.on("annotationChanged", () => {
+        _self.annotManager.on('annotationChanged', () => {
           _self.saveData(_self.annotManager.exportAnnotations(), userId);
         });
       })(_self.userId);
@@ -98,7 +102,7 @@ export default {
 
 <style>
 #app {
-  font-family: "Avenir", Helvetica, Arial, sans-serif;
+  font-family: 'Avenir', Helvetica, Arial, sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   text-align: center;
