@@ -1,62 +1,108 @@
 <template>
-  <div class="webviewer-container" id="webviewer-main" ref="webviewer"></div>
+  <div>
+    <h2>{{loading ? 'Loading' : 'false'}}</h2>
+    <div class="webviewer-container" id="webviewer-main" ref="webviewer"></div>
+  </div>
 </template>
 
 
 <script>
 export default {
-  props: ["publicPath", "content"],
+  name: "WebViewer",
+  props: ["publicPath", "content", "userId"],
+  data() {
+    return {
+      docState: "",
+      loading: false
+    };
+  },
   methods: {
-    data() {
-      docState: "";
-    },
     saveData(data) {
       console.log(data);
       const annotData = data;
-      this.$emit("change", annotData);
+      this.$emit("change", {data, userId: this.userId});
+    },
+    updateAnnotations(annotations) {
+      /* Param: New Annotations XML String
+        Clear the canvas
+        Write new data
+      */
+      const annotList = this.annotManager.getAnnotationsList();
+      const hasAnnots = annotList.length > 0;
+
+      if (hasAnnots) {
+        const curAnnots = this.annotManager.exportAnnotations();
+        if (curAnnots !== annotations) {
+          this.annotManager.deleteAnnotations(annotList);
+        }
+      }
+      console.log("Annotations imported");
+      this.annotManager.importAnnotations(annotations);
+    },
+    init(container) {
+      WebViewer(
+        {
+          path: "/lib",
+          initialDoc: "/assets/xmas-part-sample.pdf"
+        },
+        container
+      ).then(instance => {
+        const _self = this;
+        _self.loading = false;
+        _self.docViewer = instance.docViewer;
+        _self.annotManager = instance.annotManager;
+
+        /*
+          Content may have been received before the WebViewer was attached to the DOM.
+          Now that we know it has been, we can pull those annotations off the queue
+        */
+        console.log("This is " + _self);
+
+        // you can also access major namespaces from the instance as follows:
+        // var Tools = instance.Tools;
+        // var Annotations = instance.Annotations;
+        instance.disableTools();
+        instance.enableTools(["AnnotationCreateFreeHand","AnnotationEraserTool"]);
+        // now you can access APIs through `this.instance`
+
+        // Listen for annotations being changed and send them out as events
+        // _self.annotManager.on("annotationChanged", () => {
+        //   debugger;
+        //   _self.saveData(_self.annotManager.exportAnnotations());
+        // });
+        _self.annotManager.on("annotationAdded", () => {
+          debugger;
+          _self.saveData(_self.annotManager.exportAnnotations());
+        });
+        _self.annotManager.on("annotationCreated", () => {
+          debugger;
+          _self.saveData(_self.annotManager.exportAnnotations());
+        });
+
+
+        // or listen to events from the viewer element
+        _self.docViewer.on("documentLoaded", () => {
+          // call methods relating to the loaded document
+          _self.$emit("loaded");
+          if (_self.content) {
+            _self.updateAnnotations(_self.content);
+          }
+        });
+      });
     }
   },
   watch: {
-    content() {
-        const curAnnots = this.annotManager.exportAnnotations();
-
-        if (curAnnots !== this.content) {
-          const annotList = this.annotManager.getAnnotationsList();
-          this.annotManager.deleteAnnotations(annotList);
-          this.annotManager.importAnnotations(this.content);
-        }
+    content(annotations) {
+      if (this.annotManager) {
+        console.log("annotation manager exists -> update annotations");
+        this.updateAnnotations(annotations);
+      }
     }
   },
   mounted: function() {
     const webViewerContainer = this.$refs.webviewer;
-    WebViewer(
-      {
-        path: "/lib",
-        initialDoc: "/assets/xmas-part-sample.pdf"
-      },
-      webViewerContainer
-    ).then(instance => {
-      this.docViewer = instance.docViewer;
-      this.annotManager = instance.annotManager;
-
-      // you can also access major namespaces from the instance as follows:
-      // var Tools = instance.Tools;
-      // var Annotations = instance.Annotations;
-      instance.disableTools();
-      instance.enableTools(["AnnotationCreateFreeHand"]);
-      // now you can access APIs through `this.instance`
-
-      // Listen for annotations being changed and send them out as events
-      this.annotManager.on("annotationChanged", () => {
-        this.saveData(this.annotManager.exportAnnotations());
-      });
-
-      // or listen to events from the viewer element
-      this.docViewer.on("documentLoaded", () => {
-        // call methods relating to the loaded document
-        this.$emit("loaded");
-      });
-    });
+    this.loading = true;
+    this.init(webViewerContainer);
   }
 };
 </script>
