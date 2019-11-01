@@ -23,7 +23,7 @@ import WebViewer from "./components/WebViewer.vue";
 import UserList from "./components/UserList.vue";
 import VueRouter from "vue-router";
 import { saveFace, getFace } from "./faceStore.js";
-import iniialData from "./data/users.js";
+import initialData from "./data/users.js";
 
 const router = new VueRouter({
   mode: "history",
@@ -56,7 +56,7 @@ export default {
     return {
       publicPath: process.env.BASE_URL,
       currentUser: 2,
-      faceData: intialData
+      faceData: initialData
     };
   },
   watch: {
@@ -65,6 +65,11 @@ export default {
         this.currentUser = parseInt(to.params.id, 10);
     },
     currentUser() {
+      this.getDrawing();
+    }
+  },
+  methods: {
+    getDrawing () {
       getFace(this.currentUser.toString()).then(value => {
         if (value) {
           this.faceData[this.currentUser].content = value.drawingData || null;
@@ -72,14 +77,13 @@ export default {
             new Date(parseFloat(value.timestamp)).toLocaleTimeString() || null;
         }
       });
-    }
-  },
-  methods: {
+    },
     handleLoaded(e) {
       /* Set up an arbitrary initial value once the document is loaded and if there isn't one already set */
       if (!this.currentUser) {
         this.currentUser = 2;
       }
+      this.getDrawing();
     },
     handleChanged({ data, userId }) {
       /* Saved the changed data based on the userId at the time of editing */
