@@ -1,5 +1,6 @@
 <template>
   <div>
+    {{timestamp}}
     <div class="webviewer-container" id="webviewer-main" ref="webviewer"></div>
   </div>
 </template>
@@ -8,7 +9,7 @@
 <script>
 export default {
   name: "WebViewer",
-  props: ["publicPath", "content", "userId"],
+  props: ["publicPath", "content", "userId", "timestamp"],
   data() {
     return {
       docState: "",

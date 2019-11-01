@@ -1,7 +1,7 @@
 <template>
   <div id="app">
     <h1>Draw your face</h1>
-    
+
     <router-view
       class="view"
       @change="handleChanged"
@@ -12,6 +12,7 @@
       :users="faceData"
       :selected="currentUser"
       :userId="currentUser"
+      :lastTimeStamp="faceData[currentUser].timestamp"
     ></router-view>
   </div>
 </template>
@@ -23,7 +24,6 @@ import UserList from "./components/UserList.vue";
 import VueRouter from "vue-router";
 import { saveFace, getFace } from "./faceStore.js";
 import iniialData from "./data/users.js";
-
 
 const router = new VueRouter({
   mode: "history",
@@ -68,17 +68,20 @@ export default {
       getFace(this.currentUser.toString()).then(value => {
         if (value) {
           this.faceData[this.currentUser].content = value.drawingData || null;
+          this.faceData[this.currentUser].timestamp =
+            new Date(parseFloat(value.timestamp)).toLocaleTimeString() || null;
         }
       });
     }
   },
   methods: {
     handleLoaded(e) {
+      /* Set up an arbitrary initial value once the document is loaded and if there isn't one already set */
       if (!this.currentUser) {
         this.currentUser = 2;
       }
     },
-    handleChanged({data, userId}) {
+    handleChanged({ data, userId }) {
       /* Saved the changed data based on the userId at the time of editing */
       const keyAsString = userId.toString();
       this.faceData[userId].content = data;
