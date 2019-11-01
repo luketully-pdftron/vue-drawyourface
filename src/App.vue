@@ -14,16 +14,6 @@
       :userId="currentUser"
     ></router-view>
   </div>
-
-  <!-- <div>
-    <UserList :users="faceData" :selected="currentUser" @update:selected="changeCurrentUser"></UserList>
-    <WebViewer
-      v-on:loaded="handleLoaded"
-      v-on:change="handleChanged"
-      v-bind:publicPath="publicPath"
-      :content="content"
-    ></WebViewer>
-  </div>-->
 </template>
 
 
