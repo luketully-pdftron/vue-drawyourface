@@ -73,8 +73,7 @@ export default {
       getFace(this.currentUser.toString()).then(value => {
         if (value) {
           this.faceData[this.currentUser].content = value.drawingData || null;
-          this.faceData[this.currentUser].timestamp =
-            new Date(parseFloat(value.timestamp)).toLocaleTimeString() || null;
+          
         }
       });
     },
@@ -88,8 +87,12 @@ export default {
     handleChanged({ data, userId }) {
       /* Saved the changed data based on the userId at the time of editing */
       const keyAsString = userId.toString();
-      this.faceData[userId].content = data;
-      saveFace(keyAsString, this.faceData[userId].content);
+      
+      saveFace(keyAsString, this.faceData[userId].content).then(value => {
+        const time = new Date(parseFloat(value.timestamp)).toTimeString();
+        this.faceData[userId].content = data;
+        this.faceData[userId].timestamp = time
+      });
     },
     changeCurrentUser(e) {
       this.currentUser = e;
