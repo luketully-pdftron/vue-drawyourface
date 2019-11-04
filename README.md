@@ -1,9 +1,12 @@
 # pdftron
 
-## Project setup
+## Install npm packages
 ```
 npm install
 ```
+## Install WebViewer
+1. Download WebViewer
+2. `cp WebViewer/lib` to the public folder as `public/lib`
 
 ### Compiles and hot-reloads for development
 ```
