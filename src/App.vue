@@ -68,11 +68,11 @@ export default {
     }
   },
   methods: {
-    getDrawing () {
+    getDrawing() {
+      /* Retrieve face data for the current user from our local store */
       getFace(this.currentUser.toString()).then(value => {
         if (value) {
           this.faceData[this.currentUser].content = value.drawingData || null;
-          
         }
       });
     },
@@ -83,19 +83,20 @@ export default {
       }
       this.getDrawing();
     },
-    handleChanged({ data, userId }) {
+    updateDocument({ data, userId }) {
       /* Saved the changed data based on the userId at the time of editing */
       const keyAsString = userId.toString();
-      
+
+      /* Save current face data to IndexedDB */
       saveFace(keyAsString, this.faceData[userId].content).then(value => {
         const time = new Date(parseFloat(value.timestamp)).toTimeString();
         this.faceData[userId].content = data;
-        this.faceData[userId].timestamp = time
+        this.faceData[userId].timestamp = time;
       });
     },
     changeCurrentUser(e) {
-      this.currentUser = e;
-      this.$router.push({ path: `/user/${e}` });
+      this.currentUser = e; // Assign a new current user
+      this.$router.push({ path: `/user/${this.currentUser}` }); // Change the route
     }
   },
   mounted() {
