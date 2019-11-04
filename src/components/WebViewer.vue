@@ -20,7 +20,7 @@ export default {
   methods: {
     saveData(data, userId) {
       const annotData = data;
-      this.$emit("change", { data, userId: userId });
+      this.$emit("update:document", { data, userId: userId });
     },
     updateAnnotations(annotations) {
       /*
@@ -54,11 +54,11 @@ export default {
         _self.annotManager = instance.annotManager;
 
         /* Handle any WebViewer manual configuration */
-        instance.disableTools();
+        instance.disableTools(); // Disable all tools
         instance.enableTools([
           "AnnotationCreateFreeHand",
           "AnnotationEraserTool"
-        ]);
+        ]); // Enable tools individually
 
         /* Listen for annotations being changed and send them out as events
         This is being done with a self-executing anon function so that the userId at the time the event was created could be captured. */
