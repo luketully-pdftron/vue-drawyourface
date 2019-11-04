@@ -1,7 +1,7 @@
 <template>
   <form action="#">
     <h2>{{title}}</h2>
-    <select name="userSelect" id="userSelector" @change="handleChange" :value="selected">
+    <select name="userSelect" id="userSelector" @change="handleUserChange" :value="selected">
       <option v-for="(user,id) in users" :key="id" v-bind:value="id">{{ user.name }}</option>
     </select>
     <p>Current user: {{users[selected].name}} who is {{selected}}</p>
@@ -17,9 +17,8 @@ export default {
   },
   props: ["selected", "users"],
   methods: {
-    handleChange(e) {
-      const newVal = parseInt(e.currentTarget.value, 10);
-      this.$emit("update:selected", newVal);
+    handleUserChange(e) {
+      this.$emit("update:selected", parseInt(e.currentTarget.value, 10));
     }
   }
 };
