@@ -1,10 +1,9 @@
 <template>
   <div id="app">
     <h1>Draw your face</h1>
-
     <router-view
       class="view"
-      @change="handleChanged"
+      @update:document="updateDocument"
       @loaded="handleLoaded"
       @update:selected="changeCurrentUser"
       :publicPath="publicPath"
