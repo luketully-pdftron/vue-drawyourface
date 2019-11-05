@@ -1,13 +1,14 @@
 <template>
   <div id="app">
     <h1>Draw your face</h1>
+    <button @click="handleSave(currentUser)" id="save-button">Save</button>
     <router-view
       class="view"
       @update:document="updateDocument"
       @loaded="handleLoaded"
       @update:selected="changeCurrentUser"
       :publicPath="publicPath"
-      :content="content"
+      :initialContent="content"
       :users="faceData"
       :selected="currentUser"
       :userId="currentUser"
@@ -64,33 +65,47 @@ export default {
         this.currentUser = parseInt(to.params.id, 10);
     },
     currentUser() {
-      this.getDrawing();
+      if (this.loaded) {
+        this.getDrawing();
+      }
     }
   },
   methods: {
     getDrawing() {
       /* Retrieve face data for the current user from our local store */
       getFace(this.currentUser.toString()).then(value => {
-        if (value) {
+        const time = new Date(parseFloat(value.timestamp)).toTimeString();
+        if (value["drawingData"])
           this.faceData[this.currentUser].content = value.drawingData || null;
-        }
+        if (value["timestamp"])
+          this.faceData[this.currentUser].timestamp = time || null;
       });
     },
     handleLoaded(e) {
+      this.loaded = true;
+      
       /* Set up an arbitrary initial value once the document is loaded and if there isn't one already set */
       if (!this.currentUser) {
         this.currentUser = 2;
+      } else {
+        this.getDrawing();
       }
-      this.getDrawing();
+
+      
     },
     updateDocument({ data, userId }) {
+      /* Update the document properties in local state */
+      this.faceData[userId].content = data;
+    },
+    handleSave() {
+      const userId = this.currentUser;
+
       /* Saved the changed data based on the userId at the time of editing */
       const keyAsString = userId.toString();
 
       /* Save current face data to IndexedDB */
       saveFace(keyAsString, this.faceData[userId].content).then(value => {
         const time = new Date(parseFloat(value.timestamp)).toTimeString();
-        this.faceData[userId].content = data;
         this.faceData[userId].timestamp = time;
       });
     },
