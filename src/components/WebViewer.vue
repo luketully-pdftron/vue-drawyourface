@@ -10,7 +10,7 @@
 <script>
 export default {
   name: "WebViewer",
-  props: ["publicPath", "content", "userId", "lastTimeStamp"],
+  props: ["publicPath", "initialContent", "userId", "lastTimeStamp"],
   data() {
     return {
       docState: "",
@@ -18,9 +18,41 @@ export default {
     };
   },
   methods: {
-    saveData(data, userId) {
+    updateDocument(data, userId) {
       const annotData = data;
       this.$emit("update:document", { data, userId: userId });
+    },
+    drawTimeStamp() {
+      const timeStampAnnot = this.timeStampAnnot;
+
+      /* Make sure a new time stamp isn't created each time */
+      if (!timeStampAnnot) {
+        timeStampAnnot = new this.Annotations.FreeTextAnnotation();
+      }
+
+      /* Style the timestamp */
+      timeStampAnnot.TextAlign = "right";
+      timeStampAnnot.PageNumber = 1;
+      timeStampAnnot.Width = 400;
+      timeStampAnnot.Height = "18pt";
+      timeStampAnnot.FontSize = "16pt";
+      timeStampAnnot.X = this.docViewer.getPageWidth(0) - 400;
+      timeStampAnnot.Y = this.docViewer.getPageHeight(0) - 24;
+
+      timeStampAnnot.setContents(this.lastTimeStamp);
+      timeStampAnnot.setPadding(new this.Annotations.Rect(0, 0, 0, 0));
+
+      /* Determine whether or not to update or add the annotation */
+      if (this.annotManager.hasAnnotation(timeStampAnnot)) {
+        /* The second time the timestamp changes, we'll update the annotation */
+        this.annotManager.updateAnnotation(timeStampAnnot);
+      } else {
+        /* The first time the timestamp changes, we'll add the annotation */
+        this.annotManager.addAnnotation(timeStampAnnot);
+      }
+
+      /* Always redraw the annotation */
+      this.annotManager.redrawAnnotation(timeStampAnnot);
     },
     updateAnnotations(annotations) {
       /*
@@ -52,6 +84,7 @@ export default {
         /* Attach WebViewer globals to the Vue instance. These won't be reactive. */
         _self.docViewer = instance.docViewer;
         _self.annotManager = instance.annotManager;
+        _self.Annotations = instance.Annotations;
 
         /* Handle any WebViewer manual configuration */
         instance.disableTools(); // Disable all tools
@@ -63,24 +96,40 @@ export default {
         /* Listen for annotations being changed and send them out as events
         This is being done with a self-executing anon function so that the userId at the time the event was created could be captured. */
         (function(userId) {
-          _self.annotManager.on("annotationChanged", (e, annotations, action) => {
-            _self.saveData(_self.annotManager.exportAnnotations(), userId);
-          });
+          _self.annotManager.on(
+            "annotationChanged",
+            (e, annotations, action) => {
+              if (!e.imported) {
+                _self.updateDocument(
+                  _self.annotManager.exportAnnotations(),
+                  userId
+                );
+              }
+            }
+          );
         })(_self.userId);
 
         _self.docViewer.on("documentLoaded", () => {
           _self.$emit("loaded");
           if (_self.content) {
             _self.updateAnnotations(_self.content);
+            _self.drawInitialAnnotations();
           }
         });
       });
     }
   },
   watch: {
-    content(annotations) {
+    initialContent(annotations) {
       if (this.annotManager) {
         this.updateAnnotations(annotations);
+      }
+    },
+    lastTimeStamp() {
+      const annotManager = this.annotManager;
+      debugger;
+      if (this.annotManager) {
+        this.drawTimeStamp(this.lastTimeStamp);
       }
     }
   },
