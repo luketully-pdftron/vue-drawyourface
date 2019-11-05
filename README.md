@@ -1,4 +1,5 @@
-# pdftron
+# Draw Your Face in VueJS and PDFTron WebViewer
+Uses WebViewer, VueJS, Element-UI and LocalForage to allow freehand drawing on WebViewer and local storage of the annotations in IndexedDB.
 
 ## Install npm packages
 ```
